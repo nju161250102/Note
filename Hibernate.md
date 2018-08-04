@@ -42,4 +42,23 @@
 * native: 由数据库自行判断
 * uuid: 随机生成32位不相同的字符串
 
-
+### 3. 注解配置(JPA)
+* @Entity  
+    实体类  
+* @Table(name = "表名")  
+    默认以类名作为表名  
+* @Id  
+    声明属性为主键  
+* @GeneratedValue
+    表示主键是自动生成策略，一般和@Id一起使用。  
+    * AUTO 默认选项，由数据库自动生成   
+    * IDENTITY 由自己指定  
+* @Column(length=长度, nullable=是否允许为空, name="字段名")    
+* @Lob  
+    声明字段为 Clob 或 Blob 类型  
+* @Temporal(value=TemporalType.DATE)  
+    做日期类型转换  
+    DATE（日期）, TIME（时间）, TIMESTAMP（日期+时间）  
+* @Transient  
+    不进行持久化
+    
