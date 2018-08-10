@@ -24,23 +24,76 @@ ADF的检验统计量总为一个负数，越小代表越平稳。
 
 ![以上步骤引自维基百科](https://zh.wikipedia.org/wiki/ARIMA%E6%A8%A1%E5%9E%8B)
 
-## Python求解
-### ADF检验
+## Python模块文档
+使用statsmodels.tsa.stattools内的adfuller, acf, pacf，或者使用statsmodels.graphics.tsaplots内的plot_acf, plot_pacf直接作图。  
+
+### ADF检验（检验平稳性）
 statsmodels.tsa.stattools.adfuller  
+参数：  
 x (array_like, 1d)数据序列  
 返回：  
-adf (float)检验统计量  
-pvalue (float)p值  
-usedlag (int)使用的滞后量  
-nobs (int)用于ADF检验和临界值计算的数据量  
-critical values (dict)位于1%,5%和10%水平的检验统计量对应的临界值  
 
-### 自相关函数计算
+|变量名|类型|说明|
+|:---|:---|:---|
+|adf|float|检验统计量|  
+|pvalue|float|p值|  
+|usedlag|int|使用的滞后量|  
+|nobs|int|用于ADF检验和临界值计算的数据量|  
+|critical values|dict|位于1%,5%和10%水平的检验统计量对应的临界值|  
+
+### 自相关函数计算（确定p）
 statsmodels.tsa.stattools.acf  
-x 时间序列数据  
-fft bool是否采用FFT计算方法，推荐长时间序列使用  
-nlags 自相关的滞后数  
+参数：  
+
+|变量名|类型|说明|
+|:---|:---|:---|
+|x|array_like, 1d|时间序列数据|  
+|fft|bool, 默认false|是否采用FFT计算方法，推荐长时间序列使用|  
+|nlags|int|自相关的滞后数|
+
 返回不同滞后数下的自相关函数值  
+
+### 偏自相关函数计算（确定q）
+statsmodels.tsa.stattools.pacf  
+参数：  
+
+|变量名|类型|说明|
+|:---|:---|:---|
+|x|1d array|用于计算pacf的时间序列|
+|nlags|int|返回的最大滞后数|
+|method|{'ywunbiased', 'ywmle', 'ols'}|使用的计算方法|
+
+```
+    yw or ywunbiased : yule walker with bias correction in denominator for acovf. Default.
+    ywm or ywmle : yule walker without bias correction
+    ols - regression of time series on lags of it and on constant
+```
+返回不同滞后数下的自相关函数值  
+
+### ARIMA模型
+#### statsmodels.tsa.arima_model.ARIMA  
+参数：  
+* endog (array-like) – 内生变量，也就是时间序列  
+* order (iterable) – (p,d,q)分别代表使用的AR参数, 差分阶数和MA参数  
+方法： 
+* fit：返回statsmodels.tsa.arima_model.ARIMAResults class  
+通过卡尔曼滤波器的精确最大似然拟合ARIMA（p，d，q）模型。  
+
+#### statsmodels.tsa.arima_model.ARIMAResults  
+方法：  
+* predict(start=None, end=None, exog=None, typ='linear', dynamic=False)
+
+|变量名|类型|说明|
+|:---|:---|:---|
+|start|int, str, or datetime|预测的起点，可以是要解析的日期字符串或日期时间类型|
+|end|int, str, or datetime|预测的终点，可以是要解析的日期字符串或日期时间类型。如果日期索引没有固定频率，则end必须是整数索引|
+|exog|array-like, optional|作样本外预测时必须给出，并且长度要足够预测|
+|dynamic|bool, optional|False表示样本内滞后值用于预测。如果dynamic为True，则使用样本内预测值代替滞后变量|
+
+返回预测的结果数值数组
+
+## 完整代码示例
+
 
 ## 参考资料
 * ![维基百科-迪基-福勒检验](https://zh.wikipedia.org/wiki/%E8%BF%AA%E5%9F%BA-%E7%A6%8F%E5%8B%92%E6%A3%80%E9%AA%8C)
