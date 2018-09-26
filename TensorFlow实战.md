@@ -50,6 +50,38 @@ tf.all_variables() 拿到当前计算图上所有的变量
 定义placeholder作为存放输入数据的地方，维度可以由推导而来。
 
 #### 3.4.5 完整的神经网络模型
+```
+# coding=utf-8
+import tensorflow as tf
+import numpy as np
+
+w1 = tf.Variable(tf.random_normal([2, 3], stddev=1, seed=1))
+w2 = tf.Variable(tf.random_normal([3, 1], stddev=1, seed=1))
+
+x = tf.placeholder(tf.float32, [None, 2], 'x-input')
+y_ = tf.placeholder(tf.float32, [None, 1], 'y-input')
+
+a = tf.matmul(x, w1)
+y = tf.matmul(a, w2)
+
+cross_entropy = -tf.reduce_mean(y_ * tf.log(tf.clip_by_value(y, 1e-10, 1.0)))
+train_step = tf.train.AdamOptimizer(0.001).minimize(cross_entropy)
+
+dataset_size = 128
+X = np.random.random((dataset_size, 2))
+Y = [[int(x1 + x2 < 1)] for x1, x2 in X]
+
+batch_size = 8
+with tf.Session() as sess:
+    init_op = tf.global_variables_initializer()
+    sess.run(init_op)
+    for i in range(5000):
+        start = (i * batch_size) % dataset_size
+        end = min(start + batch_size, dataset_size)
+        sess.run(train_step, {x: X[start:end], y_: Y[start:end]})
+    print(sess.run(w1))
+    print(sess.run(w2))
+```
 步骤：  
 * 定义神经网络的结构和前向传播的输出结果  
 * 定义损失优化以及选择反向传播优化的算法  
@@ -72,4 +104,18 @@ tf.all_variables() 拿到当前计算图上所有的变量
 ### 4.2 损失函数定义
 刻画神经网络的效果和优化的目标。  
 #### 4.2.1 经典损失函数
-分类问题：交叉熵
+**分类问题**  
+交叉熵：刻画了两个概率分布之间的距离。  
+softmax：将神经网络的输出变成概率分布。  
+> tf.clip_by_value(n, a, b) 确保n被限制在[a, b]范围之内  
+> tf.log() 依次求对数   
+> tf.matmul() 完成矩阵乘法  
+> tf.nn.softmax_cross_entropy_with_logits(y, y_) 采用softmax回归的交叉熵损失函数，其中y为神经网络输出，y_为标准结果。  
+**回归问题**
+均方误差MSE：tf.reduce_mean()实现。  
+
+#### 4.2.2 自定义损失函数
+自定义损失函数  
+
+### 4.3 神经网络优化算法
+随机梯度下降算法
