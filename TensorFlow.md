@@ -22,6 +22,7 @@
 * 子图Subgraphs：将计算图分布在不同的设备上执行
 * 图Graph：with g1.as_default_graph(): / g = tf.get_default_graph(). 保存计算、分解计算、便于分布式计算、常见的机器学习模型已经按照图来学习。
 
+----
 ### Operations
 使用TensorBoard进行可视化展示：   
 ```
@@ -87,3 +88,82 @@ tf.placeholder(dtype, shape=None, name=None)shape用于检查输入值的规格�
 * 在计算/运行操作中单独定义操作
 * 使用Python特性确保函数在第一次调用时也被加载
 
+----
+### Basic Model
+#### 线性回归模型
+建立自变量x和因变量y之间的线性模型：  
+* 模型函数：Y_predicted = w * X + b
+* 损失函数：均方误差E[(y - y_predicted)^2]
+
+**构建计算图**  
+* 读取数据
+* 为输入和标签创建占位符 tf.placeholder
+* 创建权值和偏移量 tf.get_variable
+* 推断/预测 Y_predicted = w * X + b
+* 指定损失函数
+```
+loss = tf.square(Y - Y_predicted, name='loss')
+```
+* 创建优化器
+```
+opt = tf.train.GradientDescentOptimizer(learning_rate=0.001)
+optimizer = opt.minimize(loss)
+```
+
+**训练模型**  
+* 初始化变量
+* 运行优化器（使用feed_dict将数据送入占位符）
+
+**Huber loss**
+邻域范围之外的损失小于均方误差。  
+* 实现：tf.cond(pred, fn1, fn2, name=None)用于实现分段函数  
+> tf控制流：流程控制、比较操作、逻辑操作、调试  
+
+#### 数据集 tf.data 
+placeholder：将数据置于tensorflow流程之外，在python中易于执行，在单线程中形成性能瓶颈减慢执行速度。  
+dataset：直接使用数据而不是使用占位符之后再填入。  
+```
+tf.data.Dataset.from_tensor_slices((features, labels))
+# features包含原始输入特征的字典或DataFrame
+tf.data.Dataset.from_generator(gen, output_types, output_shapes)
+# 从文件输入
+tf.data.TextLineDataset(filenames)
+tf.data.FixedLengthRecordDataset(filenames)
+tf.data.TFRecordDataset(filenames)
+```
+tf.data.Iterator：创建遍历数据集的迭代器指针
+```
+dataset.make_one_shot_iterator()  # 迭代一次，不需要初始化
+dataset.make_initializable_iterator()  # 迭代多次，每次需要初始化
+sess.run(iterator.initializer)  # 初始化
+X, Y = iterator.get_next()  # 使用
+```
+对数据进行处理：  
+* shuffle 从数据集随机选取
+* repeat 将数据集重复n次
+* batch 将连续n个元素堆叠成一个元素
+* map 应用转换函数进行预处理  
+
+注意：  
+* 对于原型设计，feed dict可以更快更容易编写
+* 复杂的预处理或多个数据源时，tf.data难以使用
+* NLP数据通常是一个整数序列，tf.data的加速并不明显
+
+#### Optimizer优化器
+session寻找所有优化器依赖的可训练(Variable的trainble属性)的元素并更新它们。  
+```
+tf.train.GradientDescentOptimizer  # 梯度下降算法：学习率
+tf.train.AdagradOptimizer  # Adagrad算法：学习率
+tf.train.MomentumOptimizer
+tf.train.AdamOptimizer
+tf.train.FtrlOptimizer
+tf.train.RMSPropOptimizer
+```
+
+#### Logistics回归模型
+MNIST手写数字数据集tensorflow.examples.tutorials.mnist  
+* 模型函数：Y_predicted = softmax(X * w + b)
+* 损失函数：交叉熵损失-log(Y_predicted)
+
+创建迭代器：iterator = tf.data.Iterator.from_structure，可以为训练集和测试集分别创建迭代器。
+其余步骤与线性回归模型类似……
