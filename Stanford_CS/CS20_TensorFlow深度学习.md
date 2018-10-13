@@ -167,3 +167,105 @@ MNIST手写数字数据集tensorflow.examples.tutorials.mnist
 
 创建迭代器：iterator = tf.data.Iterator.from_structure，可以为训练集和测试集分别创建迭代器。
 其余步骤与线性回归模型类似……
+
+---
+### Eager Execution
+命令式编程环境，立即评估操作，操作返回具体的值。
+
+#### 图的优点与缺点
+* 可优化：自动重用缓存、并行操作、自动平衡计算与存储性能
+* 可部署：图是模型的中间表示
+* 可重写
+* 难以调试：构建后报告错误、不能即时输出状态
+* 不python：控制流和python不同、难以和传统数据结构混合
+
+#### Eager Execution的关键优点
+* 使用Python调试工具
+* 提供即时的错误报告
+* 允许使用python的数据结构
+* 可以使用简单、python化的控制流
+
+#### 基本用法
+不必使用占位符和session，可以立即返回计算结果。
+> tf.Tensor 对象会引用具体值，而不是指向计算图中的节点的符号句柄。由于不需要构建稍后在会话中运行的计算图，因此使用 print() 或调试程序很容易检查结果。评估、输出和检查张量值不会中断计算梯度的流程。
+> ——Tensor Flow中文教程
+
+适合和numpy一起使用。  
+
+#### 梯度
+eager execution中内置了自动微分计算：所有前向传播操作都会记录到“磁带”中，"磁带"反向播放时计算梯度（反向传播算法） 
+```
+# 例1
+grad = tfe.gradients_function(square)   # square是求平方函数
+print(grad(3.))
+# 例2
+grad = tfe.implicit_gradients(loss)   # 使用tfe.Variable
+def loss(y):
+  return (y - x ** 2) ** 2
+grad = tfe.implicit_gradients(loss)
+```
+---
+
+### Manage Experiments
+#### word2vec
+最简单直接的想法：每个单词用一个只有一个1，其余为0的向量表示。问题：  
+* 词汇量非常巨大：庞大的维数、低效率的计算
+* 不能代表单词间的关系
+
+理想的表示情况：  
+* 分布式的描述
+* 连续的值
+* 低维度
+* 捕获单词间的语义关系
+
+用它相邻词汇的意思表示一个单词：简单但高效。  
+Softmax和Negative Sampling（简化版噪声对比估计）  
+> NCE loss:在分类数量太大时简化softmax计算（转化为二分类的问题），采用估算的方法。
+> tf.nn.nce_loss
+
+#### 重用模型
+为你的模型定义一个类，使用函数创建模型的各个部分。
+
+#### 命名空间
+tensorflow不知道哪些节点应该被聚集在一起，除非手动指定：with tf.name_scope(name_of_that_scope):  
+解决变量间的复用问题：tf.get_variable(\<name\>,\<shape\>, \<initializer\>)，如果name相同则重用，否则根据initializer初始化。
+```
+with tf.variable_scope('two_layers') as scope:
+	scope.reuse_variables()
+```
+
+#### 保存/读取
+```
+# 保存的是session，而不是图
+saver = tf.train.Saver()
+tf.train.Saver.save(sess, save_path, global_step=None...)
+tf.train.Saver.restore(sess, save_path)
+# 使用global step
+global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')  # trainable训练过程忽略此变量
+# check if there is checkpoint
+ckpt = tf.train.get_checkpoint_state(os.path.dirname('checkpoints/checkpoint'))
+# check if there is a valid checkpoint path
+if ckpt and ckpt.model_checkpoint_path:
+     saver.restore(sess, ckpt.model_checkpoint_path)
+```
+
+#### tf.summary
+```
+# 第一步：创建summaries
+with tf.name_scope("summaries"):
+    tf.summary.scalar("loss", self.loss)
+    tf.summary.scalar("accuracy", self.accuracy)            
+    tf.summary.histogram("histogram loss", self.loss)
+    summary_op = tf.summary.merge_all()  # 合并使管理更容易
+# 第二步：将summary_op送入session计算
+oss_batch, _, summary = sess.run([loss, optimizer, summary_op])
+# 第三步：将summaries写入文件
+writer.add_summary(summary, global_step=step)
+```
+
+#### 随机控制
+计算图和每个操作都有自己的随机数种子seed。
+
+#### 自动微分
+计算图使得利用连锁规则计算梯度变得简单，自动实现前向传播算法。  
+grad_z = tf.gradients(z, [x, y])   
