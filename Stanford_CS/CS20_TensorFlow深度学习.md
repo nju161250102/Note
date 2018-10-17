@@ -297,3 +297,48 @@ tf.layers.conv2d：
 
 **池化层**：使表示更小更易管理。  
 **最后一层**： 最近邻：特征空间中L2最近邻。
+
+----
+### 风格转换
+#### TFRecord
+TensorFlow内部的推荐格式。  
+* 利用磁盘缓存
+* 快速移动
+* 将不同格式的文件放在一起
+
+#### 转换为TFRecord
+```
+# Step 1: 创建一个Writer
+writer = tf.python_io.TFRecordWriter(out_file)
+# Step 2: 获取图像的形状和值
+shape, binary_image = get_image_binary(image_file)
+# Step 3: 创建一个tf特征对象
+features = tf.train.Features(feature={'label': _int64_feature(label),
+                                    'shape': _bytes_feature(shape),
+                                    'image':_bytes_feature(binary_image)})
+# Step 4: 创建一个简单的包含上面特征的样本
+sample = tf.train.Example(features=features)
+# Step 5: 写入
+writer.write(sample.SerializeToString())
+writer.close()
+```
+
+#### 读取TFRecord
+```
+dataset = tf.data.TFRecordDataset(tfrecord_files)
+dataset = dataset.map(_parse_function)
+
+def _parse_function(tfrecord_serialized):
+    features={'label': tf.FixedLenFeature([], tf.int64),
+              'shape': tf.FixedLenFeature([], tf.string),
+              'image': tf.FixedLenFeature([], tf.string)}
+
+    parsed_features = tf.parse_single_example(tfrecord_serialized, features)
+
+    return parsed_features['label'], parsed_features['shape'], parsed_features['image']
+```
+
+#### 风格迁移
+寻找一副新的图像，使得内容与给出内容的图像最接近，风格与给出风格的图像更接近。  
+* 低层次抽取内容上的特征
+* 高层次抽取风格上的特征
