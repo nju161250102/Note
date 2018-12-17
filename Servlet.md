@@ -72,3 +72,68 @@ http://[host]:[port]\[request-path\]?\[query-string\]
 
 ### 构建响应
 HttpServletResponse，包括状态码和cookie信息
+
+### Web.xml
+* 标题：DOCTYPE声明，告诉服务器适用的servlet规范的版本，指定DTD
+> <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+* 主正文：根元素web-app
+> <web-app>
+> ……
+> </web-app>
+
+#### \<servlet\>
+```xml
+<servlet>
+	<servlet-name>Hello</servlet-name>
+	<servlet-class>servlet.HelloServlet</servlet-class>
+</servlet>
+```
+servlet-name的含义：
+* 首先，初始化参数、定制的URL模式以及其他定制通过此注册名而不是类名引用此servlet
+* 其次,可在URL而不是类名中使用此名称
+
+#### \<servlet-mapping\>
+指定Servlet可以映射到哪种URL模式
+```xml
+<servlet-mapping>
+	<servlet-name>Hello</servlet-name>
+	<url-pattern>/</url-pattern>
+</servlet-mapping>
+```
+* / 匹配到/login这样的路径型url，不会匹配到模式为\*.jsp这样的后缀型url /\*
+* /\* 匹配所有url：路径型的和后缀型的url(包括/login,\*.jsp,\*.js和\*.html等)
+
+### 单线程和多线程：
+servlet默认是多线程的，Server创建一个实例，用它处理并发请求——编写线程安全的类，避免使用可以修改的类变量和实例变量。修改servlet类，实现SingleThreadMode1接口——单线程。
+
+### Session
+会话由HttpSession对象（javax.servlet.http.HttpSession）表示。 可以通过调用请求对象的getSession方法来访问会话。 此方法返回与此请求关联的当前会话，或者，如果请求没有会话，则会创建一个会话。
+```java
+HttpSession session=request.getSession(false);
+//如果会话对象不存在，不能创建新会话，否则如果不断提交请求，一个人可以创建大量的会话对象，会耗尽服务器上的内存资源。
+if(session==null){
+    response.sendRedirect(“http://……/login”);
+    //强迫用户登录，成功登录之后，才能创建新会话
+    //当用户注销时，使会话失效--session.invalidate()
+} 
+```
+session按名称将对象值属性与会话关联。
+```java
+session.setAttribute(name,attribute); // 使用指定的名字把对象捆绑到会话中
+session.getAttribute(name); // 返回捆绑到会话中指定名字上的对象
+session.removeAttribute(name)：// 删除绑定
+```
+* 跟踪用户的购物车
+* 导航信息，登录状态
+
+### cookie
+```java
+Cookie myCookie=new Cookie(name,value);
+resp.addCookie(myCookie); //加到HTTP响应信息中
+myCookie.setMaxAge(int expiry); //浏览器将把cookie存储在本地计算机的硬盘上
+Cookie[] cookies=req.getCookies(); //获取浏览器发送的cookie
+```
+* 用户登录ID
+* 用户对语言和颜色的选择之类的偏好
+* 跟踪应用程序的使用情况
