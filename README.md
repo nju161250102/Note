@@ -2,7 +2,19 @@
 
 学习笔记归档
 
-## 附：md语法  
+### 网站推荐
+#### Hexo
+0. [入门级教程](https://zhuanlan.zhihu.com/p/26625249)
+1. [Hexo官方文档](https://hexo.io/zh-cn/docs/)
+
+#### Vue
+* [Vue官方文档](https://cn.vuejs.org/v2/guide/)
+* [Vue-route官方文档](https://router.vuejs.org/zh-cn/)
+* [UI框架—Vuetify](https://vuetifyjs.com/zh-Hans/getting-started/quick-start)
+* [前端路由—express](http://www.expressjs.com.cn/4x/api.html)
+* [测试数据—mock js](https://github.com/nuysoft/Mock/wiki)
+
+### 附：md语法  
 * 标题：多个#
 * 加粗：**包围
 * 斜体：*包围
