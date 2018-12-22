@@ -342,3 +342,7 @@ def _parse_function(tfrecord_serialized):
 寻找一副新的图像，使得内容与给出内容的图像最接近，风格与给出风格的图像更接近。  
 * 低层次抽取内容上的特征
 * 高层次抽取风格上的特征
+
+----
+### Keras介绍
+Keras是建立在tensorflow基础上的官方高层API。
