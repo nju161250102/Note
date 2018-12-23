@@ -137,3 +137,58 @@ Cookie[] cookies=req.getCookies(); //获取浏览器发送的cookie
 * 用户登录ID
 * 用户对语言和颜色的选择之类的偏好
 * 跟踪应用程序的使用情况
+
+### 过滤器 Filter
+过滤器是一个对象，它可以转换请求或响应的标头和内容(或两者)。过滤器不同于web组件，本身不会创建响应，不应该对其他web资源有任何依赖关系。因此，它可以与其他类型的web资源组合在一起。
+![过滤器图示](https://s1.ax1x.com/2018/12/20/FDXrqS.png)
+
+过滤器可以执行的主要任务如下：
+* 查询请求并采取相应措施。
+* 阻止请求和响应的进一步传递。
+* 修改请求标头和数据。
+* 修改响应标头和数据。
+
+例如：身份验证，日志记录，图像转换，数据压缩，加密，标记化流，XML转换等。
+
+#### 过滤器实现
+javax.servlet 包中的Filter, FilterChain和 FilterConfig 接口。使用@WebFilter("URL pattern")定义过滤器及相应的路径匹配模式。也可以在其部署描述符中指定过滤器映射列表。
+
+javax.servlet.Filter接口：
+```java
+public void init(FilterConfig config) throws ServletException; 
+public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException; 
+public void destroy( );
+```
+* 最重要的方法是doFilter，它传递请求，响应和过滤器链对象，完成主要的过滤工作。
+* 当实例化过滤器时，容器会调用init方法，则可以将初始化参数从FilterConfig对象中传入。
+
+#### 过滤器使用
+在调用servlet之前，截获请求，验证用户身份，未经授权的用户遭到拒绝。
+```java
+@WebFilter("servlet名")
+public class OnlyDsFilter implements Filter{
+	...
+	// 将请求转发给过滤器链上的下一个对象
+	// 下一个filter 或 请求的资源
+	chain.doFilter(request, response);
+}
+```
+如果有多个filter与当前请求（URL-Pattern）匹配，按照web.xml中filter-mapping出现的顺序运行。
+
+### 监听器 Listener
+使用监听器监控servlet生命周期事件并作出响应。Listener类通过实现listener接口来监听事件。主要作用有：监听客户端的请求、服务端的操作来自动激发一些操作
+
+![servlet事件列表](https://s1.ax1x.com/2018/12/23/Fy24PO.png)
+
+#### 监听器实现
+@WebListener 定义监听器，等价于
+```xml
+<listener>
+  <listener-class>edu.nju.login.listeners.CounterListener</listener-class>
+</listener>
+```
+
+#### 监听器使用
+* 监听Session、request、context的创建与销毁：HttpSessionLister、ServletContextListener、ServletRequestListener
+* 监听对象属性变化，分别为：HttpSessionAttributeLister、ServletContextAttributeListener、ServletRequestAttributeListener 
+* 监听Session内的对象，分别为HttpSessionBindingListener 和 HttpSessionActivationListener（不需要在web.xml里配置）
