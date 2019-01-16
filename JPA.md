@@ -50,6 +50,11 @@ EntityManager em = emf.createEntityManager();
 #### 查找操作
 使用主键查找数据：`User user = em.find(User.class, userID)`
 
+#### 查询操作
+* executeUpdate：批量查询
+* getSingleResult：获取单个结果集，如果没有获取到数据，则会抛出NoResultException异常。如果获取多条数据的话，则会抛出NonUniqueResultException异常
+* getResultList：获取对应的结果集合，指定顺序的集合，需要使用List作为返回值类型。如果没有获取到数据的话，则返回一个空集合，不会抛出异常
+
 #### 管理实例的生命周期
 实体的实例处于以下四种状态：
 
@@ -63,13 +68,33 @@ EntityManager em = emf.createEntityManager();
 #### 持久化单元配置
 persistence.xml
 ```xml
-<persistence-unit name="nju">
-	<jta-data-source>java:/MySqlDS</jta-data-source>
-	<properties>
-		<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
-		<property name="hibernate.hbm2ddl.auto" value="update"/>
-	</properties>
-</persistence-unit>
+<?xml version="1.0" encoding="UTF-8"?>
+ <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+    <!--必须要有name属性，不能为空 -->
+    <persistence-unit name="jpaPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>java:/DefaultDS</jta-data-source>
+        <jar-file>MyApp.jar</jar-file>
+        <class>org.acme.Employee</class>
+        
+        <properties>
+             <!--配置Hibernate方言 -->
+             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect" />
+             <!--配置数据库驱动 -->
+             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver" />
+             <!--配置数据库用户名 -->
+             <property name="hibernate.connection.username" value="root" />
+             <!--配置数据库密码 -->
+             <property name="hibernate.connection.password" value="root" />
+             <!--配置数据库url -->
+             <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/jpa?useUnicode=true&amp;characterEncoding=UTF-8" />
+             <!--设置外连接抓取树的最大深度 -->
+             <property name="hibernate.max_fetch_depth" value="3" />
+             <!--自动输出schema创建DDL语句 -->
+             <property name="hibernate.hbm2ddl.auto" value="update" />   
+          </properties>
+     </persistence-unit>
+ </persistence>
 ```
 
 ### Java Persistence 查询语言
