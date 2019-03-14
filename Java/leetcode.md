@@ -89,3 +89,114 @@ def removeDuplicates(self, nums):
     return p
 ```
 
+> 189 Rotate Array
+>
+> 旋转数组，本质是移动数组元素
+
+```python
+def rotate(self, nums, k):
+    """
+    :type nums: List[int]
+    :type k: int
+    :rtype: None Do not return anything, modify nums in-place instead.
+    """
+    if len(nums) < 2:
+        return 
+    k = k % len(nums)
+    nums[:] = nums[-k:] + nums[:-k]
+```
+
+> 299 Bulls and Cows
+>
+> 使用map或array记录数字出现次数
+>
+> collections.defaultdict() 可以指定键缺失的默认值
+
+```python
+def getHint(self, secret, guess):
+    """
+    :type secret: str
+    :type guess: str
+    :rtype: str
+    """
+    a = 0
+    b = 0
+    s_nums = collections.defaultdict(lambda: 0)  # 默认值是0
+    g_nums = collections.defaultdict(lambda: 0)
+    for i in range(len(secret)):
+        if secret[i] == guess[i]:
+            a += 1
+        s_nums[secret[i]] += 1
+        g_nums[guess[i]] += 1
+    for i in g_nums:
+        b += min(s_nums[i], g_nums[i])
+    return "%dA%dB" % (a, b-a)
+```
+
+> 41 First Missing Positive
+>
+> 找到第一个缺失的正数，先排序后遍历
+
+```python
+def firstMissingPositive(self, nums):
+    """
+    :type nums: List[int]
+    :rtype: int
+    """
+    nums.sort()
+    n = 0
+    for k in nums:
+        if k > 0:
+            if k-n == 1:
+                n = k
+            elif k-n > 1:  # 提前结束遍历
+                return n+1
+    return n+1
+```
+
+> 134 Gas Station
+>
+> 重设起点，遍历一遍
+
+```python
+def canCompleteCircuit(self, gas, cost):
+    """
+    :type gas: List[int]
+    :type cost: List[int]
+    :rtype: int
+    """
+    left, lack = 0,0
+    start = 0
+
+    for i in range(len(gas)):
+        left += gas[i] - cost[i]
+        # 剩余汽油不足时将当前站点设为出发点
+        if left < 0:
+            start = i+1
+            lack += left
+            left = 0
+    # 最后检查到终点时剩余汽油能否回到起点
+    if left + lack >= 0:
+        return start
+    else:
+        return -1
+```
+
+> 274 H-Index
+>
+> 先排序，再遍历
+
+```python
+def hIndex(self, citations):
+    """
+    :type citations: List[int]
+    :rtype: int
+    """
+    h = len(citations)
+    citations.sort()
+    for i in range(len(citations)):
+        if citations[i] < h:
+            h -= 1
+    return h
+```
+
