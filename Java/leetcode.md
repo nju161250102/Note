@@ -200,3 +200,101 @@ def hIndex(self, citations):
     return h
 ```
 
+> 275 H-Index II
+>
+> 二分搜索
+
+```python
+def hIndex(self, citations):
+    """
+    :type citations: List[int]
+    :rtype: int
+    """
+    n = len(citations)
+    l, r = 0, n-1
+    while l <= r:
+        mid = (l+r)/2
+        if citations[mid] > n-mid:
+            r = mid - 1
+        elif citations[mid] == n-mid:
+            return n-mid
+        else:
+            l = mid + 1
+    return n-l
+```
+
+> 217 Contains Duplicate
+>
+> list 转 set 去重
+
+```python
+def containsDuplicate(self, nums):
+    """
+    :type nums: List[int]
+    :rtype: bool
+    """
+    s = set(nums)
+    return len(s) != len(nums)
+```
+
+> 219 Contains Duplicate II
+>
+> 先去重，再判断
+
+```python
+def containsNearbyDuplicate(self, nums, k):
+    """
+    :type nums: List[int]
+    :type k: int
+    :rtype: bool
+    """
+    s = set(nums)
+    if len(s) == len(nums):
+        return False
+    for i in range(len(nums)):
+        for j in range(i+1, min(i+k+1, len(nums))):
+            if nums[j] == nums[i]:
+                return True
+    return False
+```
+
+> 55 Jump Game
+>
+> 回溯 - 动态规划 - 贪心
+
+```python
+def canJump(self, nums):
+    """
+    :type nums: List[int]
+    :rtype: bool
+    """
+    lastPos = len(nums) - 1
+    for i in range(len(nums) - 1, -1, -1):
+        if i + nums[i] >= lastPos:
+            lastPos = i
+    return lastPos == 0
+```
+
+> 45 Jump Game II
+>
+> BFS - 贪心
+
+```python
+def jump(self, nums):
+    """
+    :type nums: List[int]
+    :rtype: int
+    """
+    end = 0
+    maxPos = 0
+    steps = 0
+    for i in range(len(nums)-1):
+        # 找能跳的最远的
+        maxPos = max(maxPos, nums[i] + i)
+        if i == end:
+            # 遇到边界，就更新边界，并且步数加一
+            end = maxPos
+            steps += 1
+    return steps
+```
+
