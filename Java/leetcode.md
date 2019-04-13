@@ -4,11 +4,98 @@
 
 ### Array
 
-#### 基础
+> 1 Two Sum
+>
+> 使用哈希表(map)，记录所需的另一个数和当前位置，一次遍历
+
+```python
+def twoSum(self, nums, target):
+    """
+    :type nums: List[int]
+    :type target: int
+    :rtype: List[int]
+    """
+    s = {}
+    for i in range(len(nums)):
+        if s.has_key(nums[i]):
+            # 不能重复取同一个元素
+            if s[nums[i]] != i:
+                return [i, s[nums[i]]]
+        else:
+            # 记录对应位置
+            s[target - nums[i]] = i
+```
+
+> 15 3Sum
+>
+> 排序后使用双指针求解，注意去重
+
+```python
+def threeSum(self, nums):
+    """
+    :type nums: List[int]
+    :rtype: List[List[int]]
+    """
+    result = []
+    nums.sort()  # 先排序
+    for i in xrange(len(nums) - 2):
+        if nums[i] > 0:
+            break
+        if i > 0 and nums[i] == nums[i-1]:
+            # i=i+1时可能与之前的解重复
+            continue
+        l = i+1  # 左侧指针
+        r = len(nums) - 1  # 右侧指针
+        while l < r:
+            s = nums[i] + nums[l] + nums[r]
+            if s < 0:
+                l +=1 
+            elif s > 0:
+                r -= 1
+            else:
+                result.append((nums[i], nums[l], nums[r]))
+                # 跳过重复元素
+                while l < r and nums[l] == nums[l+1]:
+                    l += 1
+                while l < r and nums[r] == nums[r-1]:
+                    r -= 1
+                l += 1
+                r -= 1
+    return result
+```
+
+> 16 3Sum Closest
+>
+> 同上，还是双指针
+
+```python
+def threeSumClosest(self, nums, target):
+    """
+    :type nums: List[int]
+    :type target: int
+    :rtype: int
+    """
+    nums.sort()
+    ans = sys.maxint
+    for i in xrange(len(nums)-1):
+        l = i+1
+        r = len(nums)-1
+        while l < r:
+            s = nums[i] + nums[l] + nums[r]
+            if abs(s-target) < abs(ans-target):
+                ans = s
+            if s < target:
+                l += 1
+            elif s > target:
+                r -= 1
+            else:
+                return target
+    return ans
+```
 
 >  27 Remove Element
 >
-> 从数组中移除元素，无须保证顺序，返回剩余元素长度
+>  从数组中移除元素，无须保证顺序，返回剩余元素长度
 
 ```python
 def removeElement(self, nums, val):
